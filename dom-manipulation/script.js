@@ -40,7 +40,7 @@ async function syncQuotes() {
         const mergedQuotes = mergeQuotes(quotes, serverQuotes);
         quotes = mergedQuotes;
         saveQuotes();
-        alert('Quotes have been updated from the server.');
+        alert('Quotes synced with server!'); // Added alert for sync success
         filterQuotes(); // Update displayed quotes
     }
 }
