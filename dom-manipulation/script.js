@@ -1,5 +1,8 @@
 let quotes = [];
 
+// Mock API URL for simulation
+const apiUrl = 'https://jsonplaceholder.typicode.com/posts'; // Replace with your own server or mock API if needed
+
 // Load quotes from local storage
 function loadQuotes() {
     const storedQuotes = localStorage.getItem('quotes');
@@ -11,6 +14,48 @@ function loadQuotes() {
 // Save quotes to local storage
 function saveQuotes() {
     localStorage.setItem('quotes', JSON.stringify(quotes));
+}
+
+// Fetch quotes from the simulated server
+async function fetchQuotesFromServer() {
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        // Simulate quote structure
+        const serverQuotes = data.map(item => ({
+            text: item.title,
+            category: "General" // Assign a default category for simulation
+        }));
+        return serverQuotes;
+    } catch (error) {
+        console.error("Error fetching data from server:", error);
+        return [];
+    }
+}
+
+// Sync local quotes with server quotes
+async function syncQuotes() {
+    const serverQuotes = await fetchQuotesFromServer();
+    if (serverQuotes.length > 0) {
+        const mergedQuotes = mergeQuotes(quotes, serverQuotes);
+        quotes = mergedQuotes;
+        saveQuotes();
+        alert('Quotes have been updated from the server.');
+        filterQuotes(); // Update displayed quotes
+    }
+}
+
+// Merge local quotes with server quotes
+function mergeQuotes(localQuotes, serverQuotes) {
+    const quoteMap = new Map();
+
+    // Add local quotes to map
+    localQuotes.forEach(quote => quoteMap.set(quote.text, quote));
+
+    // Add server quotes to map, replacing any existing ones
+    serverQuotes.forEach(quote => quoteMap.set(quote.text, quote));
+
+    return Array.from(quoteMap.values());
 }
 
 // Populate categories in the dropdown
@@ -107,3 +152,6 @@ loadQuotes();
 populateCategories(); // Populate categories on load
 filterQuotes(); // Display quotes based on the selected category
 createAddQuoteForm();
+
+// Periodically sync quotes with the server every 60 seconds
+setInterval(syncQuotes, 60000);
