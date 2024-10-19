@@ -103,18 +103,39 @@ function showRandomQuote() {
 }
 
 // Function to add a new quote
-function addQuote() {
+async function addQuote() {
     const quoteText = document.getElementById('newQuoteText').value;
     const quoteCategory = document.getElementById('newQuoteCategory').value;
 
     if (quoteText && quoteCategory) {
-        quotes.push({ text: quoteText, category: quoteCategory });
+        const newQuote = { text: quoteText, category: quoteCategory };
+        
+        // Save quote locally
+        quotes.push(newQuote);
         saveQuotes();
-        populateCategories(); // Update categories in dropdown
+        populateCategories();
+        
+        // Send new quote to server
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newQuote)
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+        } catch (error) {
+            console.error("Error posting quote to server:", error);
+        }
+
+        // Reset input fields
         document.getElementById('newQuoteText').value = '';
         document.getElementById('newQuoteCategory').value = '';
         alert('Quote added successfully!');
-        filterQuotes(); // Update displayed quotes
+        filterQuotes();
     } else {
         alert('Please fill in both fields.');
     }
@@ -155,3 +176,4 @@ createAddQuoteForm();
 
 // Periodically sync quotes with the server every 60 seconds
 setInterval(syncQuotes, 60000);
+
